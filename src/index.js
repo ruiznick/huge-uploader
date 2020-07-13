@@ -9,6 +9,7 @@ class HugeUploader {
         this.chunkSize = params.chunkSize || 10;
         this.retries = params.retries || 5;
         this.delayBeforeRetry = params.delayBeforeRetry || 5;
+        this.statusText = "";
 
         this.start = 0;
         this.chunk = null;
@@ -127,7 +128,10 @@ class HugeUploader {
         .then((res) => {
             if (res.status === 200 || res.status === 201 || res.status === 204) {
                 if (++this.chunkCount < this.totalChunks) this._sendChunks();
-                else this._eventTarget.dispatchEvent(new Event('finish'));
+                else {
+                    this.statusText = res.statusText;
+                    this._eventTarget.dispatchEvent(new Event('finish'));
+                }
 
                 const percentProgress = Math.round((100 / this.totalChunks) * this.chunkCount);
                 this._eventTarget.dispatchEvent(new CustomEvent('progress', { detail: percentProgress }));
